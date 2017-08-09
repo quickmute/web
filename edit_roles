@@ -1,0 +1,17 @@
+<html>
+<title>Edit Roles</title>
+<head>
+<script type = "text/javascript">
+function alterRole(action,roleId){
+  document.getElementById(roleId).disabled="disabled";
+  if(action == 1){
+    var txt = document
+  }
+}
+
+function resetButton(){
+  var inputs
+}
+</script>
+</head>
+</html>
