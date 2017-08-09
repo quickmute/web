@@ -79,9 +79,9 @@ function resetButton(){
 </h3><br>
 <cfif #thisuserid# gt 0>
   <cfquery name="user_to_roles" datasource = "MYDB">
-    select user_pid, rolename, aws_roles.roleId, ownerid 
-    from aws_roles left outer join user_to_role 
-    on aws_roles.roleid = user_to_role.roleid 
+    select user_pid, rolename, roles.roleId, ownerid 
+    from roles left outer join user_to_role 
+    on roles.roleid = user_to_role.roleid 
     and user_pid = #thisuserid# where roletype = 'User' order by rolename
   </cfquery>
 <table id = "roles_table">
