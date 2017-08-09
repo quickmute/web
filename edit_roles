@@ -5,13 +5,115 @@
 function alterRole(action,roleId){
   document.getElementById(roleId).disabled="disabled";
   if(action == 1){
-    var txt = document
+    var txt = document.getElementById("Add").value;
+    txt = txt + ";" + roleId;
+    document.getElementById("Add").value = txt;
+  }else{
+    var txt = document.getElementById("Del").value;
+    txt = txt + ";" + roleId;
+    document.getElementById("Del").value = txt;
   }
 }
 
 function resetButton(){
-  var inputs
+  var inputs = documents.getElementByTagName("BUTTON");
+  for (var i=0; i<inputs.length;i++){
+    if (inputs[i].type == 'button'){
+      input[i].disabled = false;
+    }
+  }
+  document.getElementById("Add").value = "";
+  document.getElementById("Del").value = "";
 }
 </script>
+
+<cfquery name="users" datasource="MYDB">
+  select PID, my_UserID from user_list order by userid
+</cfquery>
+<cfset user_id = 1>
 </head>
+<cfheader name = "Expires" value "#Now()#">
+<body>
+<form action="edit_roles.cfm" method="post">
+<cfif isDefined("form.load") or isDefined("form.save")>
+  <cfset thisUserID = #form.user_id#>
+  <input name="UserName" type="text" value='<cfoutput>#form.user_id#</cfoutput>' size="10" hidden>
+  <cfif isDefined("form.save")>
+    <cfif len(#form.Add#) gt 0>
+      <cfset this1 = #form.Add#>
+      <cfset this1 = right(this1,len(this1)-1)>
+      <cfset this2 = this1.split(";")>
+      <cfloop array = "#this2#" index = "item">
+        <cfquery name = "user_to_role" datasource="MYDB">
+          insert into user_to_role(user_pid,roleid) values (#thisUserId#,'#item#')
+        </cfquery>
+      </cfloop>
+    </cfif>
+    <cfif len(#form.Del#) gt 0>
+      <cfset this1 = #form.Del#>
+      <cfset this1 = right(this1,len(this1)-1)>
+      <cfset this2 = this1.split(";")>
+      <cfloop array = "#this2#" index = "item">
+        <cfquery name = "user_to_role" datasource="MYDB">
+          insert into user_to_role(user_pid,roleid) values (#thisUserId#,'#item#')
+        </cfquery>
+      </cfloop>
+    </cfif>    
+<cfelse>
+  <cfset thisUserId = 0>
+  <input name = "UserName" type = "text" value = "" size = "10" hidden>
+</cfif>
+<h2>User Roles Management</h2>
+<h3>Users:
+<select name = "user_id" id = "user_id">
+  <cfoutput query="users">
+    <cfif #PID# eq #thisuserid#>
+      <option value="#PID#" selected>#my_USERID#</option>
+    <cfelse>
+      <option value="#PID#">#my_USERID#</option>
+    </cfif>
+  </cfoutput>
+</selected>
+<input name = "Load" type = "Submit" value = "Load"/>
+<input name = "Save" type = "Submit" value = "Save"/>
+</h3><br>
+<cfif #thisuserid# gt 0>
+  <cfquery name="user_to_roles" datasource = "MYDB">
+    select user_pid, rolename, aws_roles.roleId, ownerid 
+    from aws_roles left outer join user_to_role 
+    on aws_roles.roleid = user_to_role.roleid 
+    and user_pid = #thisuserid# where roletype = 'User' order by rolename
+  </cfquery>
+<table id = "roles_table">
+  <thead>
+    <tr>
+      <th>RoleName</th>
+      <th>Owner</th>
+      <th><button type="button" onClick="javascript:resetbutton();">Reset Buttons</button></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <cfoutput query = "user_to_roles">
+    <tr>
+      <th>#RoleName#</th>
+      <th>#Ownerid#</th>
+      <cfif len(#user_pid#)>
+        <button type="button" onClick="javascript:alterRole(0,'#roleid#');" value = "#roleid#" id = "#roleid#" name = "del_btn">
+        Remove</button>
+      <cfelse>
+        <button type="button" onClick="javascript:alterRole(1,'#roleid#');" value = "#roleid#" id = "#roleid#" name = "add_btn">
+        Add</button>
+      </cfif>
+      <th></th>
+      <th></th>
+    </tr>
+    </cfoutput>
+  </tbody>
+  </table>
+</cfif>
+<input name = "Add" id = "Add" type = "text" value = "" size = "100" hidden>
+<input name = "Del" id = "Del" type = "text" value = "" size = "100" hidden>
+</form>
+</body>
 </html>
